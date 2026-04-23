@@ -26,6 +26,12 @@ android {
             )
         }
     }
+
+    buildFeatures {
+
+        viewBinding =  true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -44,4 +50,9 @@ dependencies {
     // Firebase dependencies (using string literals to help Firebase Assistant detection)
     implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
     implementation("com.google.firebase:firebase-auth")
+
+    implementation("com.google.firebase:firebase-firestore:26.2.0")
+    implementation("com.google.firebase:firebase-storage:22.0.1")
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }

@@ -2,8 +2,8 @@ package com.example.socialconnect;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,11 +18,16 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 public class SignUpActivity extends AppCompatActivity {
+
+    EditText editTextEmail, editTextPassword;
+    TextInputLayout emailLayout, passwordLayout;
+    Button buttonSignUp;
+    FirebaseAuth mAuth;
 
     public void logingIn(View view){
         Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
@@ -33,10 +38,6 @@ public class SignUpActivity extends AppCompatActivity {
         Intent intent = new Intent(SignUpActivity.this, ForgotPasswordActivity.class);
         startActivity(intent);
     }
-
-    EditText editTextEmail, editTextPassword;
-    Button buttonSignUp;
-    FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,36 +56,29 @@ public class SignUpActivity extends AppCompatActivity {
         editTextEmail = findViewById(R.id.email);
         editTextPassword = findViewById(R.id.password);
         buttonSignUp = findViewById(R.id.signupbtn);
+        emailLayout = findViewById(R.id.emailLayout);
+        passwordLayout = findViewById(R.id.passwordLayout);
 
         buttonSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String email, password;
-                email = String.valueOf(editTextEmail.getText());
-                password = String.valueOf(editTextPassword.getText());
-
-                if(TextUtils.isEmpty(email)){
-                    Toast.makeText(SignUpActivity.this,"Enter Email...", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                if(TextUtils.isEmpty(password)){
-                    Toast.makeText(SignUpActivity.this, "Enter Password...", Toast.LENGTH_SHORT).show();
+                if (!validateForm()) {
                     return;
                 }
 
-                // FIX: Use createUserWithEmailAndPassword instead of signInWithEmailAndPassword
+                String email = editTextEmail.getText().toString().trim();
+                String password = editTextPassword.getText().toString().trim();
+
                 mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
                                     Toast.makeText(SignUpActivity.this, "User Registered Successfully!", Toast.LENGTH_SHORT).show();
-                                    // Optional: Redirect to login or main activity
                                     Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
                                     startActivity(intent);
                                     finish();
                                 } else {
-                                    // If sign up fails, display a message to the user with the actual error.
                                     String errorMessage = task.getException() != null ? task.getException().getMessage() : "Authentication failed.";
                                     Toast.makeText(SignUpActivity.this, "Error: " + errorMessage,
                                             Toast.LENGTH_LONG).show();
@@ -92,8 +86,36 @@ public class SignUpActivity extends AppCompatActivity {
                                 }
                             }
                         });
-
             }
         });
+    }
+
+    private boolean validateForm() {
+        boolean isValid = true;
+
+        String emailInput = editTextEmail.getText().toString().trim();
+        String passwordInput = editTextPassword.getText().toString().trim();
+
+        if (emailInput.isEmpty()) {
+            emailLayout.setError("Email field cannot be empty");
+            isValid = false;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()) {
+            emailLayout.setError("Please enter a valid email address");
+            isValid = false;
+        } else {
+            emailLayout.setError(null);
+        }
+
+        if (passwordInput.isEmpty()) {
+            passwordLayout.setError("Password field cannot be empty");
+            isValid = false;
+        } else if (passwordInput.length() < 6) {
+            passwordLayout.setError("Password must be at least 6 characters");
+            isValid = false;
+        } else {
+            passwordLayout.setError(null);
+        }
+
+        return isValid;
     }
 }

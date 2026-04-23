@@ -19,6 +19,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -42,14 +43,31 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
+        // 1. Initialize mAuth FIRST
         mAuth = FirebaseAuth.getInstance();
+
+        // 2. Check if user is already signed in
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null){
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+            return; // Exit to prevent setting content view
+        }
+
+        // 3. Set content view ONLY if not logged in
+        setContentView(R.layout.activity_login);
+
+        // 4. Handle edge-to-edge padding
+        View mainView = findViewById(R.id.main);
+        if (mainView != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
+        }
 
         remail = findViewById(R.id.email);
         rpassword = findViewById(R.id.password);
@@ -59,9 +77,8 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                String email, password;
-                email = String.valueOf(remail.getText());
-                password = String.valueOf(rpassword.getText());
+                String email = String.valueOf(remail.getText());
+                String password = String.valueOf(rpassword.getText());
 
                 if(TextUtils.isEmpty(email)){
                     Toast.makeText(LoginActivity.this,"Enter Email...", Toast.LENGTH_LONG).show();
@@ -93,7 +110,6 @@ public class LoginActivity extends AppCompatActivity {
 
             }
         });
-
 
     }
 }
