@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -28,8 +28,7 @@ android {
     }
 
     buildFeatures {
-
-        viewBinding =  true
+        viewBinding = true
     }
 
     compileOptions {
@@ -47,12 +46,11 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    // Firebase dependencies (using string literals to help Firebase Assistant detection)
-    implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
-    implementation("com.google.firebase:firebase-auth")
-
-    implementation("com.google.firebase:firebase-firestore:26.2.0")
-    implementation("com.google.firebase:firebase-storage:22.0.1")
+    // Firebase dependencies
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
 }
