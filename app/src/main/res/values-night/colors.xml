@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bold Yellow, Red and Black Palette (Dark Mode) -->
+    <color name="primary">#FFD54F</color> <!-- Lighter Yellow for visibility -->
+    <color name="primaryVariant">#FFC107</color>
+    <color name="secondary">#FF5252</color> <!-- Lighter Red -->
+    <color name="accent">#FF8A80</color>
+
+    <color name="background">#000000</color> <!-- Pure Black -->
+    <color name="surface">#121212</color> <!-- Very Dark Gray -->
+    <color name="onBackground">#FFFFFF</color>
+    <color name="onSurface">#E0E0E0</color>
+</resources>

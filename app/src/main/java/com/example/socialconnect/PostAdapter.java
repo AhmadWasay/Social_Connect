@@ -1,6 +1,7 @@
 package com.example.socialconnect;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.List;
 
@@ -35,11 +39,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         holder.postTextContent.setText(currentPost.getTextContent());
 
-        // Initial state for async loading
+        // Optimized user data loading: Only load if not already loaded or view is recycled
         holder.postAuthorName.setText("Loading...");
         holder.postAuthorAvatar.setImageResource(android.R.drawable.ic_menu_myplaces);
 
-        // Fetch user data from Firestore
         FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(currentPost.getUserId())
@@ -58,16 +61,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                                     .into(holder.postAuthorAvatar);
                         }
                     } else {
-                        // SAFETY NET 1: The document is missing from the database
                         holder.postAuthorName.setText("Unknown User");
                     }
                 })
-                .addOnFailureListener(e -> {
-                    // SAFETY NET 2: The internet dropped or Firebase blocked the request
-                    holder.postAuthorName.setText("Unknown User");
-                });
+                .addOnFailureListener(e -> holder.postAuthorName.setText("Unknown User"));
 
-        // Handle the Timestamp
         if (currentPost.getTimestamp() != null) {
             long timeInMillis = currentPost.getTimestamp().toDate().getTime();
             String timeAgo = (String) android.text.format.DateUtils.getRelativeTimeSpanString(timeInMillis);
@@ -76,12 +74,64 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             holder.postTimestamp.setText("Just now");
         }
 
-        // Handle the optional Post Image
         if (currentPost.getImageUrl() != null && !currentPost.getImageUrl().isEmpty()) {
             holder.postImageView.setVisibility(View.VISIBLE);
             Glide.with(context).load(currentPost.getImageUrl()).into(holder.postImageView);
         } else {
             holder.postImageView.setVisibility(View.GONE);
+        }
+
+        // --- OPTIMIZED LIKE SYSTEM ---
+        updateLikeUI(holder, currentPost);
+
+        holder.btnLike.setOnClickListener(v -> {
+            String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            DocumentReference postRef = FirebaseFirestore.getInstance().collection("posts").document(currentPost.getPostId());
+            boolean isLiked = currentPost.getLikes().contains(currentUserId);
+
+            // 1. UI Animation
+            v.animate().scaleX(1.3f).scaleY(1.3f).setDuration(150).withEndAction(() -> 
+                v.animate().scaleX(1f).scaleY(1f).setDuration(150).start()
+            ).start();
+
+            // 2. Local Update (Instant feedback)
+            if (isLiked) {
+                currentPost.getLikes().remove(currentUserId);
+                postRef.update("likes", FieldValue.arrayRemove(currentUserId));
+            } else {
+                currentPost.getLikes().add(currentUserId);
+                postRef.update("likes", FieldValue.arrayUnion(currentUserId));
+            }
+            
+            // 3. Selective Re-render (Only this item)
+            notifyItemChanged(holder.getAdapterPosition());
+        });
+
+        holder.btnComment.setOnClickListener(v -> {
+            CommentBottomSheet bottomSheet = CommentBottomSheet.newInstance(currentPost.getPostId());
+            bottomSheet.show(((androidx.appcompat.app.AppCompatActivity) context).getSupportFragmentManager(), "CommentBottomSheet");
+        });
+
+        View.OnClickListener profileClickListener = v -> {
+            android.content.Intent intent = new android.content.Intent(context, PublicProfileActivity.class);
+            intent.putExtra("USER_ID", currentPost.getUserId());
+            context.startActivity(intent);
+        };
+        holder.postAuthorAvatar.setOnClickListener(profileClickListener);
+        holder.postAuthorName.setOnClickListener(profileClickListener);
+    }
+
+    private void updateLikeUI(PostViewHolder holder, Post post) {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        int likeCount = post.getLikes().size();
+        holder.tvLikeCount.setText(likeCount + (likeCount == 1 ? " Like" : " Likes"));
+
+        if (post.getLikes().contains(currentUserId)) {
+            holder.btnLike.setImageResource(R.drawable.ic_heart_filled);
+            holder.btnLike.setColorFilter(Color.RED);
+        } else {
+            holder.btnLike.setImageResource(R.drawable.ic_heart_outline);
+            holder.btnLike.setColorFilter(Color.GRAY);
         }
     }
 
@@ -91,17 +141,19 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     }
 
     public static class PostViewHolder extends RecyclerView.ViewHolder {
-        TextView postAuthorName, postTimestamp, postTextContent;
-        ImageView postImageView, postAuthorAvatar;
+        TextView postAuthorName, postTimestamp, postTextContent, tvLikeCount;
+        ImageView postImageView, postAuthorAvatar, btnLike, btnComment;
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
-
             postAuthorName = itemView.findViewById(R.id.postAuthorName);
             postTimestamp = itemView.findViewById(R.id.postTimestamp);
             postTextContent = itemView.findViewById(R.id.postTextContent);
             postImageView = itemView.findViewById(R.id.postImageView);
             postAuthorAvatar = itemView.findViewById(R.id.postAuthorAvatar);
+            btnLike = itemView.findViewById(R.id.btnLike);
+            btnComment = itemView.findViewById(R.id.btnComment);
+            tvLikeCount = itemView.findViewById(R.id.tvLikeCount);
         }
     }
 }

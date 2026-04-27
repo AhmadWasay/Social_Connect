@@ -2,12 +2,16 @@ package com.example.socialconnect;
 
 import com.google.firebase.Timestamp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Post {
     private String postId;
     private String userId;
     private String textContent;
     private String imageUrl;
     private Timestamp timestamp;
+    private List<String> likes;
 
     public Post() {
     }
@@ -25,4 +29,11 @@ public class Post {
     public String getTextContent() { return textContent; }
     public String getImageUrl() { return imageUrl; }
     public Timestamp getTimestamp() { return timestamp; }
+
+    public List<String> getLikes() {
+        if (likes == null){
+            return new ArrayList<>();
+        }
+        return likes;
+    }
 }

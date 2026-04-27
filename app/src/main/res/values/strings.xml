@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">SocialConnect</string>
     <string name="app_title">Social Connect</string>
+    <string name="add_post">Add Post</string>
 </resources>

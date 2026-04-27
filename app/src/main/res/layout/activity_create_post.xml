@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:orientation="vertical"
-    android:background="@android:color/white"
-    android:layout_marginTop="40sp">
+    android:paddingTop="40dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -17,21 +18,25 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@color/onBackground" />
 
         <Button
             android:id="@+id/btnPublishPost"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:text="Post" />
+            android:text="Post"
+            android:textColor="@color/secondary"
+            android:textStyle="bold" />
     </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#E0E0E0" />
+        android:background="#333333" />
 
     <EditText
         android:id="@+id/etPostContent"
@@ -41,6 +46,8 @@
         android:background="@android:color/transparent"
         android:gravity="top"
         android:hint="What's on your mind?"
+        android:textColorHint="@color/gray"
+        android:textColor="@color/onBackground"
         android:inputType="textMultiLine"
         android:minLines="5"
         android:textSize="18sp" />
@@ -52,6 +59,7 @@
         android:layout_margin="16dp"
         android:scaleType="centerCrop"
         android:visibility="gone" />
+
     <LinearLayout
         android:id="@+id/btnAddImage"
         android:layout_width="wrap_content"
@@ -61,18 +69,17 @@
         android:orientation="horizontal"
         android:padding="8dp">
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_camera" />
-
-        <TextView
+        <Button
+            android:id="@+id/btnAddPhoto"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:text="Add Photo"
-            android:textColor="#1976D2"
-            android:textStyle="bold" />
+            android:textColor="@color/onBackground"
+            app:icon="@android:drawable/ic_menu_camera"
+            app:iconTint="@color/onBackground"
+            app:strokeColor="@color/gray" />
+
     </LinearLayout>
 
 </LinearLayout>

@@ -34,6 +34,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         replaceFragment(new HomeFragment());
 
+        // Initialize Cloudinary (Only needs to happen once when the app opens)
+        try {
+            java.util.Map<String, String> config = new java.util.HashMap<>();
+            config.put("cloud_name", "dgwbepfkk"); // <-- Paste your cloud name
+            com.cloudinary.android.MediaManager.init(this, config);
+        } catch (Exception e) {
+            // MediaManager throws an exception if initialized twice, we just catch and ignore it
+        }
+
+        // Ask for Notification Permission on Android 13+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);

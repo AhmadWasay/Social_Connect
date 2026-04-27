@@ -53,4 +53,11 @@ dependencies {
     implementation(libs.firebase.storage)
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    implementation("com.google.firebase:firebase-messaging")
+
+    implementation("com.cloudinary:cloudinary-android:2.5.0")
+
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

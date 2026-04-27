@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Red, Yellow, and Black Palette -->
+    <color name="primary">#D32F2F</color> <!-- Red -->
+    <color name="primaryVariant">#B71C1C</color>
+    <color name="secondary">#FBC02D</color> <!-- Yellow -->
+    <color name="accent">#FBC02D</color>
+
+    <color name="background">#000000</color> <!-- Black -->
+    <color name="surface">#121212</color> <!-- Dark Surface -->
+    <color name="onBackground">#FFFFFF</color> <!-- White text for black bg -->
+    <color name="onSurface">#FFFFFF</color>
+
+    <!-- Shared/Common -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray">#BDBDBD</color>
+    <color name="error">#CF6679</color>
+
+    <!-- Login Specific -->
+    <color name="login_input_bg">#1E1E1E</color>
 </resources>

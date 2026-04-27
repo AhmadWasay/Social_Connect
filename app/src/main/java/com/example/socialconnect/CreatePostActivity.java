@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -27,21 +28,19 @@ public class CreatePostActivity extends AppCompatActivity {
     private EditText etPostContent;
     private ImageView ivPostImagePreview;
     private Button btnPublishPost;
-    private ImageButton btnCancelPost;
-    private LinearLayout btnAddImage;
 
-    private Uri selectedImageUri;
     private FirebaseFirestore fStore;
     private FirebaseAuth fAuth;
+    private Uri selectedImageUri = null;
 
-    // The native image picker we used for the profile picture!
-    private final ActivityResultLauncher<String> imagePickerLauncher = registerForActivityResult(
+    // THE MODERN ANDROID PHOTO PICKER
+    private final ActivityResultLauncher<String> photoPickerLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
                 if (uri != null) {
                     selectedImageUri = uri;
                     ivPostImagePreview.setImageURI(uri);
-                    ivPostImagePreview.setVisibility(View.VISIBLE); // Un-hide the image view
+                    ivPostImagePreview.setVisibility(View.VISIBLE); // Show the preview!
                 }
             }
     );
@@ -55,17 +54,23 @@ public class CreatePostActivity extends AppCompatActivity {
         etPostContent = findViewById(R.id.etPostContent);
         ivPostImagePreview = findViewById(R.id.ivPostImagePreview);
         btnPublishPost = findViewById(R.id.btnPublishPost);
-        btnCancelPost = findViewById(R.id.btnCancelPost);
-        btnAddImage = findViewById(R.id.btnAddImage);
+        ImageButton btnCancelPost = findViewById(R.id.btnCancelPost);
+        
+        // Find the specific button and the container
+        LinearLayout btnAddImageContainer = findViewById(R.id.btnAddImage);
+        Button btnAddPhoto = findViewById(R.id.btnAddPhoto);
 
         // 2. Initialize Firebase
         fStore = FirebaseFirestore.getInstance();
         fAuth = FirebaseAuth.getInstance();
 
         // 3. Click Listeners
-        btnCancelPost.setOnClickListener(v -> finish()); // Closes this screen immediately
+        btnCancelPost.setOnClickListener(v -> finish());
 
-        btnAddImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
+        // Attach listener to BOTH the container and the button to be safe
+        View.OnClickListener pickPhotoListener = v -> photoPickerLauncher.launch("image/*");
+        btnAddImageContainer.setOnClickListener(pickPhotoListener);
+        btnAddPhoto.setOnClickListener(pickPhotoListener);
 
         btnPublishPost.setOnClickListener(v -> publishPost());
     }
@@ -78,44 +83,79 @@ public class CreatePostActivity extends AppCompatActivity {
             return;
         }
 
-        // Disable button so they don't click it twice while it's loading
-        btnPublishPost.setEnabled(false);
-        btnPublishPost.setText("Posting...");
-
         if (fAuth.getCurrentUser() == null) {
             Toast.makeText(this, "You must be logged in to post.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String currentUserId = fAuth.getCurrentUser().getUid();
+        // Lock the button to prevent double-posting
+        btnPublishPost.setEnabled(false);
+        btnPublishPost.setText("Uploading...");
 
-        // Generate a random unique ID for this specific post
-        String postId = UUID.randomUUID().toString();
+        if (selectedImageUri != null) {
+            // STEP 1: UPLOAD THE IMAGE TO CLOUDINARY
+            try {
+                com.cloudinary.android.MediaManager.get().upload(selectedImageUri)
+                        .unsigned("lxmihjih") // <--- PASTE YOUR CLOUDINARY PRESET HERE
+                        .callback(new com.cloudinary.android.callback.UploadCallback() {
+                            @Override
+                            public void onStart(String requestId) {}
 
-        /* NOTE: If the user selected an image, you would upload it to Firebase Storage here,
-           get the download URL, and THEN save to Firestore (just like the profile picture).
-           Since you are sorting out Storage billing with the client, we will just save the text for now! */
+                            @Override
+                            public void onProgress(String requestId, long bytes, long totalBytes) {}
 
-        saveToFirestore(postId, currentUserId, content, null);
+                            @Override
+                            public void onSuccess(String requestId, java.util.Map resultData) {
+                                // Image uploaded successfully! Get the secure URL.
+                                String imageUrl = (String) resultData.get("secure_url");
+                                saveToFirestore(content, imageUrl);
+                            }
+
+                            @Override
+                            public void onError(String requestId, com.cloudinary.android.callback.ErrorInfo error) {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(CreatePostActivity.this, "Image Upload failed: " + error.getDescription(), Toast.LENGTH_LONG).show();
+                                    btnPublishPost.setEnabled(true);
+                                    btnPublishPost.setText("Post");
+                                });
+                            }
+
+                            @Override
+                            public void onReschedule(String requestId, com.cloudinary.android.callback.ErrorInfo error) {}
+                        }).dispatch();
+            } catch (Exception e) {
+                Toast.makeText(this, "Upload setup error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                btnPublishPost.setEnabled(true);
+                btnPublishPost.setText("Post");
+            }
+        } else {
+            // No image selected, just save the text directly
+            saveToFirestore(content, "");
+        }
     }
 
-    private void saveToFirestore(String postId, String userId, String content, String imageUrl) {
-        // Create the Post data object
+    // STEP 2: SAVE THE URL AND TEXT TO FIRESTORE
+    private void saveToFirestore(String content, String imageUrl) {
+        if (fAuth.getCurrentUser() == null) return;
+        
+        String currentUserId = fAuth.getCurrentUser().getUid();
+        String postId = UUID.randomUUID().toString();
+
         Map<String, Object> postMap = new HashMap<>();
         postMap.put("postId", postId);
-        postMap.put("userId", userId);
+        postMap.put("userId", currentUserId);
         postMap.put("textContent", content);
-        postMap.put("imageUrl", imageUrl);
-
-        // FieldValue.serverTimestamp() guarantees the exact time is recorded by Google's servers
+        postMap.put("imageUrl", imageUrl); // Now includes the Cloudinary link!
         postMap.put("timestamp", FieldValue.serverTimestamp());
 
-        // Save it to the "posts" collection
+        // CRITICAL: Initialize the empty likes array so the Like button doesn't crash!
+        postMap.put("likes", new ArrayList<>());
+
         fStore.collection("posts").document(postId)
                 .set(postMap)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(CreatePostActivity.this, "Posted!", Toast.LENGTH_SHORT).show();
-                    finish(); // Close the screen and return to the Feed!
+                    finish();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(CreatePostActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();

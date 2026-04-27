@@ -1,14 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
+    android:orientation="vertical"
+    android:padding="24dp"
     tools:context=".SettingsFragment">
 
-    <!-- TODO: Update blank fragment layout -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:text="Account Settings"
+        android:textColor="@color/onBackground"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/logoutButton"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="16dp"
+        android:text="Log Out"
+        android:textAllCaps="false"
+        android:textColor="@color/onBackground"
+        app:cornerRadius="12dp"
+        app:icon="@android:drawable/ic_lock_power_off"
+        app:iconTint="@color/onBackground"
+        app:strokeColor="@color/gray" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/deleteAccountButton"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Delete Account"
+        android:textAllCaps="false"
+        android:textColor="@color/primary"
+        app:icon="@android:drawable/ic_menu_delete"
+        app:iconTint="@color/primary" />
+
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Settings" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="Warning: Deleting your account is permanent and cannot be undone."
+        android:textColor="@color/gray"
+        android:textSize="12sp" />
 
-</FrameLayout>
+</LinearLayout>
