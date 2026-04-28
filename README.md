@@ -1,4 +1,5 @@
 SocialConnect
+
 SocialConnect is a modern, feature-rich Android social media application built with a bold Red, Yellow, and Black theme. It allows users to connect, share content, and interact with a community in a streamlined, high-performance environment.
 
 🚀 Tech Stack
