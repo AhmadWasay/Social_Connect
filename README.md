@@ -61,7 +61,7 @@ The app features a custom "Midnight Flare" theme designed for striking contrast 
 Follow these instructions to get a local copy of the project up and running.
 1. Clone the repository:
 Bash
-git clone https://github.com/your-username/SocialConnect.git
+git clone https://github.com/AhmadWasay/SocialConnect.git
 2. Firebase Setup:
 •	Create a new project in the Firebase Console.
 •	Register your Android app and download the google-services.json file.
