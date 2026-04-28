@@ -1,5 +1,3 @@
-Here is a well-formatted, professional README.md file for your repository based on the details you provided. You can copy and paste this directly into your GitHub project.
-________________________________________
 SocialConnect
 SocialConnect is a modern, feature-rich Android social media application built with a bold Red, Yellow, and Black theme. It allows users to connect, share content, and interact with a community in a streamlined, high-performance environment.
 
